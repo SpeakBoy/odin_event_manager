@@ -17,6 +17,18 @@ def clean_phone_number(phone_number)
   truncated_phone_number
 end
 
+def clean_date_and_time(date_and_time)
+  seperate_date_and_time = date_and_time.split(" ")
+  date_seperated = seperate_date_and_time[0].split("/")
+  month = date_seperated[0].to_i
+  day = date_seperated[1].to_i
+  year = ("20" + date_seperated[2]).to_i
+  time_seperated = seperate_date_and_time[1].split(":")
+  hour = time_seperated[0].to_i
+  minute = time_seperated[1].to_i
+  Time.new(year, month, day, hour, minute, 0)
+end
+
 def legislators_by_zipcode(zip)
   civic_info = Google::Apis::CivicinfoV2::CivicInfoService.new
   civic_info.key = File.read("secret.key").strip
@@ -53,11 +65,15 @@ contents.each do |row|
 
   phone_number = clean_phone_number(row[:homephone])
 
+  date_and_time = clean_date_and_time(row[:regdate])
+
+  weekday_registered = date_and_time.wday
+
   legislators = legislators_by_zipcode(zipcode)
 
   form_letter = erb_template.result(binding)
 
   # save_thank_you_letter(id, form_letter)
-  puts phone_number
+  puts weekday_registered
 end
 
